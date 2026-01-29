@@ -59,31 +59,48 @@ pipeline {
 
         stage('DB Health Check') {
             steps {
-                sh '''
-                  echo "🔍 Checking DB connectivity..."
+                withCredentials([
+                    string(
+                        credentialsId: 'db-url',
+                        variable: 'DB_URL'
+                    )
+                ]) {
+                    sh '''
+                      echo "🔍 Checking DB connectivity..."
 
-                  DB_HOST=$(echo "$DB_URL" | sed 's|jdbc:mysql://||' | cut -d: -f1)
-                  echo "DB_HOST=$DB_HOST"
-                  echo "DB_PORT=$DB_PORT"
+                      echo "DB_URL=$DB_URL"
 
-                  RETRY=3
-                  WAIT=5
+                      DB_HOST=$(echo "$DB_URL" | sed 's|jdbc:mysql://||' | cut -d: -f1)
+                      DB_PORT=3306
 
-                  for i in $(seq 1 $RETRY); do
-                    echo "➡ Attempt $i/$RETRY"
-                    if timeout 5 bash -c "</dev/tcp/$DB_HOST/$DB_PORT"; then
-                      echo "✅ DB is reachable"
-                      exit 0
-                    fi
-                    echo "⚠ DB not reachable, retry in ${WAIT}s..."
-                    sleep $WAIT
-                  done
+                      if [ -z "$DB_HOST" ]; then
+                        echo "❌ DB_HOST is empty"
+                        exit 1
+                      fi
 
-                  echo "❌ DB Health Check FAILED after $RETRY attempts"
-                  exit 1
-                '''
+                      echo "DB_HOST=$DB_HOST"
+                      echo "DB_PORT=$DB_PORT"
+
+                      RETRY=3
+                      WAIT=5
+
+                      for i in $(seq 1 $RETRY); do
+                        echo "➡ Attempt $i/$RETRY"
+                        if timeout 5 bash -c "</dev/tcp/$DB_HOST/$DB_PORT"; then
+                          echo "✅ DB is reachable"
+                          exit 0
+                        fi
+                        echo "⚠ DB not reachable, retry in ${WAIT}s..."
+                        sleep $WAIT
+                      done
+
+                      echo "❌ DB Health Check FAILED after $RETRY attempts"
+                      exit 1
+                    '''
+                }
             }
         }
+
 
         stage('Build') {
             steps {
