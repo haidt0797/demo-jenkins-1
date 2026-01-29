@@ -1,8 +1,6 @@
 package com.example.demo.config;
 
 import com.example.demo.aop.Event;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.function.StreamBridge;
@@ -22,7 +20,7 @@ public class KafkaProducer {
             log.info("data send kafka: {} - {}", bindingName, event);
             streamBridge.send(bindingName, message);
         } catch (Exception ex) {
-            log.error("Send message kafka error: {}", ex);
+            log.error("Send message kafka error: {}", ex.getMessage());
         }
     }
 }
