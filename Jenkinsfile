@@ -38,6 +38,16 @@ pipeline {
             }
         }
 
+        stage('Debug DB') {
+            steps {
+                sh '''
+                  echo "DB_URL=$DB_URL"
+                  echo "DB_USER=$DB_USER"
+                  nc -zv host.docker.internal 3306 || true
+                '''
+            }
+        }
+
         stage('Build') {
             steps {
                 withCredentials([
