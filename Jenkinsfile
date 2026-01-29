@@ -18,6 +18,19 @@ pipeline {
         DB_URL = 'jdbc:mysql://host.docker.internal:3306/demo'
     }
 
+    pipeline {
+        options {
+            disableConcurrentBuilds()
+        }
+        stages {
+            stage('Build') {
+                steps {
+                    echo 'Build'
+                }
+            }
+        }
+    }
+
     stages {
 
         stage('Checkout') {
